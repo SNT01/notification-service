@@ -54,24 +54,26 @@ Added JVM arguments to all pom.xml files with tests to open necessary Java modul
 </argLine>
 ```
 
-#### Play2 Maven Plugin Configuration
-Added JVM arguments to the play2-maven-plugin in service/pom.xml to enable running the application with Java 21:
+#### Running the Application with Java 21
+The play2-maven-plugin requires JVM arguments to access internal Java APIs when running with Java 21. Since the plugin doesn't support direct JVM argument configuration, you must set the `MAVEN_OPTS` environment variable:
 
-```xml
-<configuration>
-    <jvmArgs>
-        --add-opens java.base/java.lang=ALL-UNNAMED
-        --add-opens java.base/java.net=ALL-UNNAMED
-        --add-opens java.base/java.io=ALL-UNNAMED
-        --add-opens java.base/java.util=ALL-UNNAMED
-    </jvmArgs>
-</configuration>
+```bash
+export MAVEN_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED"
+mvn play2:run
+```
+
+Or run it in a single command:
+```bash
+MAVEN_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED" mvn play2:run
 ```
 
 **Why Needed**: The Play2 plugin uses JNotify for file watching, which requires reflection access to internal Java APIs (specifically `ClassLoader.findResource` and `sys_paths` field). These are blocked by Java 21's module system by default.
 
+**Note**: You may see warnings about "File watch service initialization failed", but the application will still run correctly without hot-reload functionality.
+
 ### 6. Documentation
 - **README.md**: Updated prerequisites to specify Java 21 instead of Java 11
+- **README.md**: Added instructions for running with MAVEN_OPTS for Java 21
 
 ## Build Status
 
@@ -124,7 +126,13 @@ To verify the Java 21 upgrade:
    mvn play2:dist
    ```
 
-4. **Verify Docker image builds**:
+4. **Run the application** (with required Java 21 module opens):
+   ```bash
+   cd service
+   MAVEN_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED" mvn play2:run
+   ```
+
+5. **Verify Docker image builds**:
    ```bash
    docker build -t notification-service:java21 .
    ```
