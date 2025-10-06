@@ -13,7 +13,7 @@ This readme file contains the instruction to set up and run the Sunbird-notifica
 
 ### Prerequisites
 
-- Java 11
+- Java 21
 - Latest Docker
 - Latest Maven (Only For Mac m1 users use 3.8.8 Maven version)
 
@@ -109,9 +109,19 @@ Make sure the build is successful before proceeding to the next step. If the bui
 fix any configuration issues and rebuild the application.
 
 4. Run the netty server using the following maven command in the path `<project-base-path>/sunbird-notification-service/service`:
+
+**For Java 21**, you need to set MAVEN_OPTS to open required modules:
 ```shell
+export MAVEN_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED"
 mvn play2:run
 ```
+
+Alternatively, you can run it in a single command:
+```shell
+MAVEN_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED" mvn play2:run
+```
+
+**Note**: The file watch service may show warnings about initialization failure, but the application will still run correctly.
 
 5. Verify the database connections by running the following command:
 ```shell
