@@ -54,6 +54,22 @@ Added JVM arguments to all pom.xml files with tests to open necessary Java modul
 </argLine>
 ```
 
+#### Play2 Maven Plugin Configuration
+Added JVM arguments to the play2-maven-plugin in service/pom.xml to enable running the application with Java 21:
+
+```xml
+<configuration>
+    <jvmArgs>
+        --add-opens java.base/java.lang=ALL-UNNAMED
+        --add-opens java.base/java.net=ALL-UNNAMED
+        --add-opens java.base/java.io=ALL-UNNAMED
+        --add-opens java.base/java.util=ALL-UNNAMED
+    </jvmArgs>
+</configuration>
+```
+
+**Why Needed**: The Play2 plugin uses JNotify for file watching, which requires reflection access to internal Java APIs (specifically `ClassLoader.findResource` and `sys_paths` field). These are blocked by Java 21's module system by default.
+
 ### 6. Documentation
 - **README.md**: Updated prerequisites to specify Java 21 instead of Java 11
 
