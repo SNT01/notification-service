@@ -7,7 +7,6 @@ import play.api.Application;
 import play.api.Play;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
-import sun.misc.Signal;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -30,21 +29,21 @@ public class SignalHandler {
         delay = Long.parseLong(stopDelay);
     }
     FiniteDuration  STOP_DELAY = Duration.create(delay, TimeUnit.SECONDS);
-    Signal.handle(
-        new Signal("TERM"),
-        signal -> {
-          isShuttingDown = true;
-            logger.info(
-              "Termination required, swallowing SIGTERM to allow current requests to finish");
-          actorSystem
-              .scheduler()
-              .scheduleOnce(
-                  STOP_DELAY,
-                  () -> {
-                    Play.stop(applicationProvider.get());
-                  },
-                  actorSystem.dispatcher());
-        });
+    
+    // Register shutdown hook to handle graceful shutdown
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+      isShuttingDown = true;
+      logger.info(
+          "Termination required, gracefully shutting down to allow current requests to finish");
+      actorSystem
+          .scheduler()
+          .scheduleOnce(
+              STOP_DELAY,
+              () -> {
+                Play.stop(applicationProvider.get());
+              },
+              actorSystem.dispatcher());
+    }));
   }
 
   public boolean isShuttingDown() {
